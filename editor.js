@@ -96,6 +96,9 @@ class Editor {
     });
 
     window.addEventListener("wheel", (e) => {
+      if (e.deltaY === 0) {
+        return;
+      }
       this.zoom += e.deltaY > 0 ? -this.zoomStep : this.zoomStep;
       this.zoom = Math.max(this.zoomMin, Math.min(this.zoomMax, this.zoom)); // Clamp zoom between 0.1 and 5
     });
