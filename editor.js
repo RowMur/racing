@@ -8,6 +8,10 @@ class Editor {
     this.selectedColor = "grey";
 
     this.state = new Set();
+
+    this.lastAdded = null;
+    this.lastRemoved = null;
+    this.isHoldingShift = false;
   }
 
   #stateKeyFromCoords(x, y) {
@@ -31,8 +35,12 @@ class Editor {
     const key = this.#stateKeyFromCoords(x, y);
     if (value) {
       this.state.add(key);
+      this.lastAdded = key;
+      this.lastRemoved = null;
     } else {
       this.state.delete(key);
+      this.lastAdded = null;
+      this.lastRemoved = key;
     }
   }
 
@@ -42,7 +50,40 @@ class Editor {
       const rect = e.target.getBoundingClientRect();
       const x = Math.floor((e.clientX - rect.left) / this.interval);
       const y = Math.floor((e.clientY - rect.top) / this.interval);
-      this.#setState(x, y, !this.#getState(x, y));
+      if (!this.isHoldingShift) {
+        this.#setState(x, y, !this.#getState(x, y));
+        return;
+      }
+
+      if (this.lastAdded === null && this.lastRemoved === null) {
+        return;
+      }
+
+      const isAdding = !!this.lastAdded;
+      const lastKey = isAdding ? this.lastAdded : this.lastRemoved;
+
+      const { x: lastX, y: lastY } = this.#getCoordsFromStateKey(lastKey);
+      const minX = Math.min(x, lastX);
+      const maxX = Math.max(x, lastX);
+      const minY = Math.min(y, lastY);
+      const maxY = Math.max(y, lastY);
+      for (let i = minX; i <= maxX; i++) {
+        for (let j = minY; j <= maxY; j++) {
+          this.#setState(i, j, isAdding);
+        }
+      }
+      this.lastAdded = this.#stateKeyFromCoords(x, y);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Shift") {
+        this.isHoldingShift = true;
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "Shift") {
+        this.isHoldingShift = false;
+      }
     });
   }
 
