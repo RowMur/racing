@@ -12,6 +12,15 @@ class Editor {
     this.lastAdded = null;
     this.lastRemoved = null;
     this.isHoldingShift = false;
+
+    this.zoom = 1;
+    this.zoomMax = 2;
+    this.zoomMin = 0.5;
+    this.zoomStep = 0.1;
+  }
+
+  #zoomedInterval() {
+    return this.interval * this.zoom;
   }
 
   #stateKeyFromCoords(x, y) {
@@ -48,8 +57,8 @@ class Editor {
     this.state.clear();
     window.addEventListener("click", (e) => {
       const rect = e.target.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) / this.interval);
-      const y = Math.floor((e.clientY - rect.top) / this.interval);
+      const x = Math.floor((e.clientX - rect.left) / this.#zoomedInterval());
+      const y = Math.floor((e.clientY - rect.top) / this.#zoomedInterval());
       if (!this.isHoldingShift) {
         this.#setState(x, y, !this.#getState(x, y));
         return;
@@ -85,20 +94,25 @@ class Editor {
         this.isHoldingShift = false;
       }
     });
+
+    window.addEventListener("wheel", (e) => {
+      this.zoom += e.deltaY > 0 ? -this.zoomStep : this.zoomStep;
+      this.zoom = Math.max(this.zoomMin, Math.min(this.zoomMax, this.zoom)); // Clamp zoom between 0.1 and 5
+    });
   }
 
   draw(ctx) {
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
 
-    for (let i = 0; i < width; i += this.interval) {
+    for (let i = 0; i < width; i += this.#zoomedInterval()) {
       ctx.beginPath();
       ctx.moveTo(i, 0);
       ctx.lineTo(i, height);
       ctx.strokeStyle = this.gridBorderColor;
       ctx.stroke();
     }
-    for (let i = 0; i < height; i += this.interval) {
+    for (let i = 0; i < height; i += this.#zoomedInterval()) {
       ctx.beginPath();
       ctx.moveTo(0, i);
       ctx.lineTo(width, i);
@@ -110,10 +124,10 @@ class Editor {
       const { x, y } = this.#getCoordsFromStateKey(key);
       ctx.fillStyle = this.selectedColor;
       ctx.fillRect(
-        x * this.interval,
-        y * this.interval,
-        this.interval,
-        this.interval
+        x * this.#zoomedInterval(),
+        y * this.#zoomedInterval(),
+        this.#zoomedInterval(),
+        this.#zoomedInterval()
       );
     }
   }
