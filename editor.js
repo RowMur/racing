@@ -117,6 +117,15 @@ class Editor {
 
       this.#resetClickState();
 
+      if (
+        e.clientX < this.borders.borderLeft ||
+        e.clientX > this.borders.borderRight ||
+        e.clientY < this.borders.borderTop ||
+        e.clientY > this.borders.borderBottom
+      ) {
+        return;
+      }
+
       const x = Math.floor(
         (e.clientX - this.borders.borderLeft) / this.#zoomedInterval()
       );
