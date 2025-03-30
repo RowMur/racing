@@ -115,28 +115,28 @@ class Editor {
     const borderTop = this.y - (ctx.canvas.height * scale) / 2;
     const borderBottom = this.y + (ctx.canvas.height * scale) / 2;
 
+    const leftOverX = (borderRight - borderLeft) % this.#zoomedInterval();
+    const leftOverY = (borderBottom - borderTop) % this.#zoomedInterval();
+
     this.borders = {
-      borderLeft: borderLeft,
-      borderRight: borderRight,
-      borderTop: borderTop,
-      borderBottom: borderBottom,
+      borderLeft: borderLeft + leftOverX / 2,
+      borderRight: borderRight - leftOverX / 2,
+      borderTop: borderTop + leftOverY / 2,
+      borderBottom: borderBottom - leftOverY / 2,
     };
   }
 
   draw(ctx) {
     const { borderLeft, borderRight, borderTop, borderBottom } = this.borders;
-    console.log(
-      `borderLeft: ${borderLeft}, borderRight: ${borderRight}, borderTop: ${borderTop}, borderBottom: ${borderBottom}`
-    );
 
-    for (let i = borderLeft; i < borderRight; i += this.#zoomedInterval()) {
+    for (let i = borderLeft; i <= borderRight; i += this.#zoomedInterval()) {
       ctx.beginPath();
       ctx.moveTo(i, borderTop);
       ctx.lineTo(i, borderBottom);
       ctx.strokeStyle = this.gridBorderColor;
       ctx.stroke();
     }
-    for (let i = borderTop; i < borderBottom; i += this.#zoomedInterval()) {
+    for (let i = borderTop; i <= borderBottom; i += this.#zoomedInterval()) {
       ctx.beginPath();
       ctx.moveTo(borderLeft, i);
       ctx.lineTo(borderRight, i);
