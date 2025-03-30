@@ -5,7 +5,7 @@ class Editor {
 
     this.interval = 80;
     this.gridBorderColor = "lightgrey";
-    this.selectedColor = "grey";
+    this.selectedColor = "lightgrey";
 
     this.state = new Set();
 
@@ -17,6 +17,13 @@ class Editor {
     this.zoomMax = 2;
     this.zoomMin = 0.5;
     this.zoomStep = 0.1;
+
+    this.camX = x;
+    this.camY = y;
+
+    this.isClicking = false;
+    this.hasMovedDuringClick = false;
+    this.clickOrigin = null;
   }
 
   #zoomedInterval() {
@@ -53,9 +60,48 @@ class Editor {
     }
   }
 
+  #scale() {
+    return this.zoom / this.zoomMin;
+  }
+
+  #resetClickState() {
+    this.isClicking = false;
+    this.hasMovedDuringClick = false;
+    this.clickOrigin = null;
+  }
+
   init() {
     this.state.clear();
-    window.addEventListener("click", (e) => {
+
+    window.addEventListener("mousedown", (e) => {
+      this.isClicking = true;
+      this.clickOrigin = {
+        x: e.clientX,
+        y: e.clientY,
+      };
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!this.isClicking) {
+        return;
+      }
+      const dx = e.clientX - this.clickOrigin.x;
+      const dy = e.clientY - this.clickOrigin.y;
+      this.camX += dx / this.#scale();
+      this.camY += dy / this.#scale();
+      this.clickOrigin.x = e.clientX;
+      this.clickOrigin.y = e.clientY;
+      this.hasMovedDuringClick = true;
+    });
+
+    window.addEventListener("mouseup", (e) => {
+      if (!this.isClicking || this.hasMovedDuringClick) {
+        this.#resetClickState();
+        return;
+      }
+
+      this.#resetClickState();
+
       const x = Math.floor(
         (e.clientX - this.borders.borderLeft) / this.#zoomedInterval()
       );
@@ -108,12 +154,11 @@ class Editor {
   }
 
   update(ctx) {
-    const scale = this.zoom / this.zoomMin;
-
-    const borderLeft = this.x - (ctx.canvas.width * scale) / 2;
-    const borderRight = this.x + (ctx.canvas.width * scale) / 2;
-    const borderTop = this.y - (ctx.canvas.height * scale) / 2;
-    const borderBottom = this.y + (ctx.canvas.height * scale) / 2;
+    const scale = this.#scale();
+    const borderLeft = this.camX - (ctx.canvas.width * scale) / 2;
+    const borderRight = this.camX + (ctx.canvas.width * scale) / 2;
+    const borderTop = this.camY - (ctx.canvas.height * scale) / 2;
+    const borderBottom = this.camY + (ctx.canvas.height * scale) / 2;
 
     const leftOverX = (borderRight - borderLeft) % this.#zoomedInterval();
     const leftOverY = (borderBottom - borderTop) % this.#zoomedInterval();
