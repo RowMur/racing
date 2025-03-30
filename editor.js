@@ -7,7 +7,7 @@ class Editor {
     this.gridBorderColor = "lightgrey";
     this.selectedColor = "lightgrey";
 
-    this.state = new Set();
+    this.state = new Map();
 
     this.lastAdded = null;
     this.lastRemoved = null;
@@ -24,6 +24,10 @@ class Editor {
     this.isClicking = false;
     this.hasMovedDuringClick = false;
     this.clickOrigin = null;
+  }
+
+  #newTile(x, y) {
+    return new Tile(x, y, this.#zoomedInterval());
   }
 
   #zoomedInterval() {
@@ -50,7 +54,10 @@ class Editor {
   #setState(x, y, value) {
     const key = this.#stateKeyFromCoords(x, y);
     if (value) {
-      this.state.add(key);
+      if (this.state.has(key)) {
+        return;
+      }
+      this.state.set(key, this.#newTile(x, y));
       this.lastAdded = key;
       this.lastRemoved = null;
     } else {
@@ -62,6 +69,14 @@ class Editor {
 
   #scale() {
     return this.zoom / this.zoomMin;
+  }
+
+  #getCanvasCoordsFromStateCoords(x, y) {
+    const { borderLeft, borderTop } = this.borders;
+    return {
+      x: borderLeft + x * this.#zoomedInterval(),
+      y: borderTop + y * this.#zoomedInterval(),
+    };
   }
 
   #resetClickState() {
@@ -189,15 +204,9 @@ class Editor {
       ctx.stroke();
     }
 
-    for (const key of this.state) {
-      const { x, y } = this.#getCoordsFromStateKey(key);
-      ctx.fillStyle = this.selectedColor;
-      ctx.fillRect(
-        borderLeft + x * this.#zoomedInterval(),
-        borderTop + y * this.#zoomedInterval(),
-        this.#zoomedInterval(),
-        this.#zoomedInterval()
-      );
+    for (const [_, tile] of this.state.entries()) {
+      const { x, y } = this.#getCanvasCoordsFromStateCoords(tile.x, tile.y);
+      tile.draw(ctx, x, y, this.#zoomedInterval());
     }
   }
 }
