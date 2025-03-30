@@ -11,6 +11,7 @@ animate();
 function animate() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  editor.update(ctx);
   editor.draw(ctx);
   requestAnimationFrame(animate);
 }

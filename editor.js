@@ -56,9 +56,12 @@ class Editor {
   init() {
     this.state.clear();
     window.addEventListener("click", (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) / this.#zoomedInterval());
-      const y = Math.floor((e.clientY - rect.top) / this.#zoomedInterval());
+      const x = Math.floor(
+        (e.clientX - this.borders.borderLeft) / this.#zoomedInterval()
+      );
+      const y = Math.floor(
+        (e.clientY - this.borders.borderTop) / this.#zoomedInterval()
+      );
       if (!this.isHoldingShift) {
         this.#setState(x, y, !this.#getState(x, y));
         return;
@@ -104,21 +107,39 @@ class Editor {
     });
   }
 
-  draw(ctx) {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
+  update(ctx) {
+    const borderLeft = -ctx.canvas.width * (this.zoom - this.zoomMin);
+    const borderRight =
+      ctx.canvas.width * (this.zoom - this.zoomMin) + ctx.canvas.width;
+    const borderTop = -ctx.canvas.height * (this.zoom - this.zoomMin);
+    const borderBottom =
+      ctx.canvas.height * (this.zoom - this.zoomMin) + ctx.canvas.height;
 
-    for (let i = 0; i < width; i += this.#zoomedInterval()) {
+    this.borders = {
+      borderLeft: borderLeft,
+      borderRight: borderRight,
+      borderTop: borderTop,
+      borderBottom: borderBottom,
+    };
+  }
+
+  draw(ctx) {
+    const { borderLeft, borderRight, borderTop, borderBottom } = this.borders;
+    console.log(
+      `borderLeft: ${borderLeft}, borderRight: ${borderRight}, borderTop: ${borderTop}, borderBottom: ${borderBottom}`
+    );
+
+    for (let i = borderLeft; i < borderRight; i += this.#zoomedInterval()) {
       ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, height);
+      ctx.moveTo(i, borderTop);
+      ctx.lineTo(i, borderBottom);
       ctx.strokeStyle = this.gridBorderColor;
       ctx.stroke();
     }
-    for (let i = 0; i < height; i += this.#zoomedInterval()) {
+    for (let i = borderTop; i < borderBottom; i += this.#zoomedInterval()) {
       ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(width, i);
+      ctx.moveTo(borderLeft, i);
+      ctx.lineTo(borderRight, i);
       ctx.strokeStyle = this.gridBorderColor;
       ctx.stroke();
     }
@@ -127,8 +148,8 @@ class Editor {
       const { x, y } = this.#getCoordsFromStateKey(key);
       ctx.fillStyle = this.selectedColor;
       ctx.fillRect(
-        x * this.#zoomedInterval(),
-        y * this.#zoomedInterval(),
+        borderLeft + x * this.#zoomedInterval(),
+        borderTop + y * this.#zoomedInterval(),
         this.#zoomedInterval(),
         this.#zoomedInterval()
       );
