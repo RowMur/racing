@@ -26,10 +26,6 @@ class Editor {
     this.clickOrigin = null;
   }
 
-  #newTile(x, y) {
-    return new Tile(x, y, this.#zoomedInterval());
-  }
-
   #zoomedInterval() {
     return this.interval * this.zoom;
   }
@@ -53,18 +49,252 @@ class Editor {
 
   #setState(x, y, value) {
     const key = this.#stateKeyFromCoords(x, y);
-    if (value) {
-      if (this.state.has(key)) {
-        return;
-      }
-      this.state.set(key, this.#newTile(x, y));
-      this.lastAdded = key;
-      this.lastRemoved = null;
-    } else {
+    if (!value) {
       this.state.delete(key);
       this.lastAdded = null;
       this.lastRemoved = key;
+      return;
     }
+
+    if (this.state.has(key)) {
+      return;
+    }
+
+    let thisTilesTo = null;
+    let thisTilesFrom = null;
+
+    const upNeighborKey = this.#stateKeyFromCoords(x, y - 1);
+    const downNeighborKey = this.#stateKeyFromCoords(x, y + 1);
+    const leftNeighborKey = this.#stateKeyFromCoords(x - 1, y);
+    const rightNeighborKey = this.#stateKeyFromCoords(x + 1, y);
+
+    const upNeighbor = this.state.get(upNeighborKey);
+    const downNeighbor = this.state.get(downNeighborKey);
+    const leftNeighbor = this.state.get(leftNeighborKey);
+    const rightNeighbor = this.state.get(rightNeighborKey);
+
+    while (true) {
+      const addDirection = (direction) => {
+        if (!thisTilesFrom) {
+          thisTilesFrom = direction;
+          return false;
+        }
+        if (!thisTilesTo) {
+          thisTilesTo = direction;
+          return true;
+        }
+
+        return true;
+      };
+
+      // First check if any are poiting at this tile
+      if (
+        upNeighbor &&
+        (upNeighbor.to === "DOWN" || upNeighbor.from === "DOWN")
+      ) {
+        const haveFilledDirections = addDirection("UP");
+        if (haveFilledDirections) {
+          break;
+        }
+      }
+      if (
+        downNeighbor &&
+        (downNeighbor.to === "UP" || downNeighbor.from === "UP")
+      ) {
+        const haveFilledDirections = addDirection("DOWN");
+        if (haveFilledDirections) {
+          break;
+        }
+      }
+      if (
+        leftNeighbor &&
+        (leftNeighbor.to === "RIGHT" || leftNeighbor.from === "RIGHT")
+      ) {
+        const haveFilledDirections = addDirection("LEFT");
+        if (haveFilledDirections) {
+          break;
+        }
+      }
+      if (
+        rightNeighbor &&
+        (rightNeighbor.to === "LEFT" || rightNeighbor.from === "LEFT")
+      ) {
+        const haveFilledDirections = addDirection("RIGHT");
+        if (haveFilledDirections) {
+          break;
+        }
+      }
+
+      // Then check for any neighbors that aren't pointing at another tile
+      if (upNeighbor) {
+        const upLeftNeighborKey = this.#stateKeyFromCoords(x - 1, y - 1);
+        const upRightNeighborKey = this.#stateKeyFromCoords(x + 1, y - 1);
+        const upUpNeighborKey = this.#stateKeyFromCoords(x, y - 2);
+        const upLeftNeighbor = this.state.get(upLeftNeighborKey);
+        const upRightNeighbor = this.state.get(upRightNeighborKey);
+        const upUpNeighbor = this.state.get(upUpNeighborKey);
+
+        const upToNeighbor =
+          upNeighbor.to === "UP"
+            ? upUpNeighbor
+            : upNeighbor.to === "LEFT"
+            ? upLeftNeighbor
+            : upNeighbor.to === "RIGHT"
+            ? upRightNeighbor
+            : null;
+
+        const upFromNeighbor =
+          upNeighbor.from === "UP"
+            ? upUpNeighbor
+            : upNeighbor.from === "LEFT"
+            ? upLeftNeighbor
+            : upNeighbor.from === "RIGHT"
+            ? upRightNeighbor
+            : null;
+
+        if (!upToNeighbor) {
+          upNeighbor.to = "DOWN";
+          const haveFilledDirections = addDirection("UP");
+          if (haveFilledDirections) {
+            break;
+          }
+        } else if (!upFromNeighbor) {
+          upNeighbor.from = "DOWN";
+          const haveFilledDirections = addDirection("UP");
+          if (haveFilledDirections) {
+            break;
+          }
+        }
+      }
+
+      if (downNeighbor) {
+        const downLeftNeighborKey = this.#stateKeyFromCoords(x - 1, y + 1);
+        const downRightNeighborKey = this.#stateKeyFromCoords(x + 1, y + 1);
+        const downDownNeighborKey = this.#stateKeyFromCoords(x, y + 2);
+        const downLeftNeighbor = this.state.get(downLeftNeighborKey);
+        const downRightNeighbor = this.state.get(downRightNeighborKey);
+        const downDownNeighbor = this.state.get(downDownNeighborKey);
+
+        const downToNeighbor =
+          downNeighbor.to === "DOWN"
+            ? downDownNeighbor
+            : downNeighbor.to === "LEFT"
+            ? downLeftNeighbor
+            : downNeighbor.to === "RIGHT"
+            ? downRightNeighbor
+            : null;
+
+        const downFromNeighbor =
+          downNeighbor.from === "DOWN"
+            ? downDownNeighbor
+            : downNeighbor.from === "LEFT"
+            ? downLeftNeighbor
+            : downNeighbor.from === "RIGHT"
+            ? downRightNeighbor
+            : null;
+
+        if (!downToNeighbor) {
+          downNeighbor.to = "UP";
+          const haveFilledDirections = addDirection("DOWN");
+          if (haveFilledDirections) {
+            break;
+          }
+        } else if (!downFromNeighbor) {
+          downNeighbor.from = "UP";
+          const haveFilledDirections = addDirection("DOWN");
+          if (haveFilledDirections) {
+            break;
+          }
+        }
+      }
+
+      if (leftNeighbor) {
+        const leftUpNeighborKey = this.#stateKeyFromCoords(x - 1, y - 1);
+        const leftDownNeighborKey = this.#stateKeyFromCoords(x - 1, y + 1);
+        const leftLeftNeighborKey = this.#stateKeyFromCoords(x - 2, y);
+        const leftUpNeighbor = this.state.get(leftUpNeighborKey);
+        const leftDownNeighbor = this.state.get(leftDownNeighborKey);
+        const leftLeftNeighbor = this.state.get(leftLeftNeighborKey);
+
+        const leftToNeighbor =
+          leftNeighbor.to === "LEFT"
+            ? leftLeftNeighbor
+            : leftNeighbor.to === "UP"
+            ? leftUpNeighbor
+            : leftNeighbor.to === "DOWN"
+            ? leftDownNeighbor
+            : null;
+
+        const leftFromNeighbor =
+          leftNeighbor.from === "LEFT"
+            ? leftLeftNeighbor
+            : leftNeighbor.from === "UP"
+            ? leftUpNeighbor
+            : leftNeighbor.from === "DOWN"
+            ? leftDownNeighbor
+            : null;
+
+        if (!leftToNeighbor) {
+          leftNeighbor.to = "RIGHT";
+          const haveFilledDirections = addDirection("LEFT");
+          if (haveFilledDirections) {
+            break;
+          }
+        } else if (!leftFromNeighbor) {
+          leftNeighbor.from = "RIGHT";
+          const haveFilledDirections = addDirection("LEFT");
+          if (haveFilledDirections) {
+            break;
+          }
+        }
+      }
+
+      if (rightNeighbor) {
+        const rightUpNeighborKey = this.#stateKeyFromCoords(x + 1, y - 1);
+        const rightDownNeighborKey = this.#stateKeyFromCoords(x + 1, y + 1);
+        const rightRightNeighborKey = this.#stateKeyFromCoords(x + 2, y);
+        const rightUpNeighbor = this.state.get(rightUpNeighborKey);
+        const rightDownNeighbor = this.state.get(rightDownNeighborKey);
+        const rightRightNeighbor = this.state.get(rightRightNeighborKey);
+
+        const rightToNeighbor =
+          rightNeighbor.to === "RIGHT"
+            ? rightRightNeighbor
+            : rightNeighbor.to === "UP"
+            ? rightUpNeighbor
+            : rightNeighbor.to === "DOWN"
+            ? rightDownNeighbor
+            : null;
+
+        const rightFromNeighbor =
+          rightNeighbor.from === "RIGHT"
+            ? rightRightNeighbor
+            : rightNeighbor.from === "UP"
+            ? rightUpNeighbor
+            : rightNeighbor.from === "DOWN"
+            ? rightDownNeighbor
+            : null;
+
+        if (!rightToNeighbor) {
+          rightNeighbor.to = "LEFT";
+          const haveFilledDirections = addDirection("RIGHT");
+          if (haveFilledDirections) {
+            break;
+          }
+        } else if (!rightFromNeighbor) {
+          rightNeighbor.from = "LEFT";
+          const haveFilledDirections = addDirection("RIGHT");
+          if (haveFilledDirections) {
+            break;
+          }
+        }
+      }
+      break;
+    }
+
+    this.state.set(key, new Tile(x, y, thisTilesFrom, thisTilesTo));
+    this.lastAdded = key;
+    this.lastRemoved = null;
   }
 
   #scale() {
@@ -132,29 +362,29 @@ class Editor {
       const y = Math.floor(
         (e.clientY - this.borders.borderTop) / this.#zoomedInterval()
       );
-      if (!this.isHoldingShift) {
-        this.#setState(x, y, !this.#getState(x, y));
-        return;
-      }
+      // if (!this.isHoldingShift) {
+      this.#setState(x, y, !this.#getState(x, y));
+      // return;
+      // }
 
-      if (this.lastAdded === null && this.lastRemoved === null) {
-        return;
-      }
+      // if (this.lastAdded === null && this.lastRemoved === null) {
+      //   return;
+      // }
 
-      const isAdding = !!this.lastAdded;
-      const lastKey = isAdding ? this.lastAdded : this.lastRemoved;
+      // const isAdding = !!this.lastAdded;
+      // const lastKey = isAdding ? this.lastAdded : this.lastRemoved;
 
-      const { x: lastX, y: lastY } = this.#getCoordsFromStateKey(lastKey);
-      const minX = Math.min(x, lastX);
-      const maxX = Math.max(x, lastX);
-      const minY = Math.min(y, lastY);
-      const maxY = Math.max(y, lastY);
-      for (let i = minX; i <= maxX; i++) {
-        for (let j = minY; j <= maxY; j++) {
-          this.#setState(i, j, isAdding);
-        }
-      }
-      this.lastAdded = this.#stateKeyFromCoords(x, y);
+      // const { x: lastX, y: lastY } = this.#getCoordsFromStateKey(lastKey);
+      // const minX = Math.min(x, lastX);
+      // const maxX = Math.max(x, lastX);
+      // const minY = Math.min(y, lastY);
+      // const maxY = Math.max(y, lastY);
+      // for (let i = minX; i <= maxX; i++) {
+      //   for (let j = minY; j <= maxY; j++) {
+      //     this.#setState(i, j, isAdding);
+      //   }
+      // }
+      // this.lastAdded = this.#stateKeyFromCoords(x, y);
     });
 
     window.addEventListener("keydown", (e) => {
