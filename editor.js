@@ -108,12 +108,12 @@ class Editor {
   }
 
   update(ctx) {
-    const borderLeft = -ctx.canvas.width * (this.zoom - this.zoomMin);
-    const borderRight =
-      ctx.canvas.width * (this.zoom - this.zoomMin) + ctx.canvas.width;
-    const borderTop = -ctx.canvas.height * (this.zoom - this.zoomMin);
-    const borderBottom =
-      ctx.canvas.height * (this.zoom - this.zoomMin) + ctx.canvas.height;
+    const scale = this.zoom / this.zoomMin;
+
+    const borderLeft = this.x - (ctx.canvas.width * scale) / 2;
+    const borderRight = this.x + (ctx.canvas.width * scale) / 2;
+    const borderTop = this.y - (ctx.canvas.height * scale) / 2;
+    const borderBottom = this.y + (ctx.canvas.height * scale) / 2;
 
     this.borders = {
       borderLeft: borderLeft,
