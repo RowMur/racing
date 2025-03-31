@@ -8,6 +8,7 @@ class Editor {
     this.selectedColor = "lightgrey";
 
     this.state = new Map();
+    this.start = null;
 
     this.lastAdded = null;
     this.lastRemoved = null;
@@ -42,6 +43,10 @@ class Editor {
   #setState(x, y, value) {
     const key = this.#stateKeyFromCoords(x, y);
     if (!value) {
+      if (this.start === key) {
+        this.start = null;
+      }
+
       this.state.delete(key);
       this.lastAdded = null;
       this.lastRemoved = key;
@@ -50,6 +55,10 @@ class Editor {
 
     if (this.state.has(key)) {
       return;
+    }
+
+    if (this.start === null) {
+      this.start = key;
     }
 
     let thisTilesTo = null;
@@ -430,9 +439,9 @@ class Editor {
       ctx.stroke();
     }
 
-    for (const [_, tile] of this.state.entries()) {
+    for (const [key, tile] of this.state.entries()) {
       const { x, y } = this.#getCanvasCoordsFromStateCoords(tile.x, tile.y);
-      tile.draw(ctx, x, y, this.#zoomedInterval());
+      tile.draw(ctx, x, y, this.#zoomedInterval(), key === this.start);
     }
   }
 }
