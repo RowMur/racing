@@ -29,7 +29,6 @@ class Tile {
     this.x = x;
     this.y = y;
 
-    // Todo - enforce that to and from can't be the same
     this.from = from || "LEFT";
     const wantTo = to || "RIGHT";
     this.to = wantTo === this.from ? getOppositeDirection(this.from) : wantTo;

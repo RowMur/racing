@@ -34,17 +34,9 @@ class Editor {
     return `${x},${y}`;
   }
 
-  #getCoordsFromStateKey(key) {
-    const coords = key.split(",");
-    return {
-      x: parseInt(coords[0], 10),
-      y: parseInt(coords[1], 10),
-    };
-  }
-
   #getState(x, y) {
     const key = this.#stateKeyFromCoords(x, y);
-    return this.state.has(key);
+    return this.state.get(key);
   }
 
   #setState(x, y, value) {
@@ -63,15 +55,10 @@ class Editor {
     let thisTilesTo = null;
     let thisTilesFrom = null;
 
-    const upNeighborKey = this.#stateKeyFromCoords(x, y - 1);
-    const downNeighborKey = this.#stateKeyFromCoords(x, y + 1);
-    const leftNeighborKey = this.#stateKeyFromCoords(x - 1, y);
-    const rightNeighborKey = this.#stateKeyFromCoords(x + 1, y);
-
-    const upNeighbor = this.state.get(upNeighborKey);
-    const downNeighbor = this.state.get(downNeighborKey);
-    const leftNeighbor = this.state.get(leftNeighborKey);
-    const rightNeighbor = this.state.get(rightNeighborKey);
+    const upNeighbor = this.#getState(x, y - 1);
+    const downNeighbor = this.#getState(x, y + 1);
+    const leftNeighbor = this.#getState(x - 1, y);
+    const rightNeighbor = this.#getState(x + 1, y);
 
     while (true) {
       const addDirection = (direction) => {
