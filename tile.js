@@ -34,6 +34,40 @@ class Tile {
     this.to = wantTo === this.from ? getOppositeDirection(this.from) : wantTo;
   }
 
+  updateDirections(newFrom, newTo) {
+    if (!newFrom && !newTo) {
+      return;
+    }
+
+    if (newFrom && newTo) {
+      if (newFrom === newTo) {
+        this.from = newFrom;
+        this.to = getOppositeDirection(newFrom);
+        return;
+      }
+
+      this.from = newFrom;
+      this.to = newTo;
+      return;
+    }
+
+    if (newFrom) {
+      this.from = newFrom;
+      if (this.from === this.to) {
+        this.to = getOppositeDirection(newFrom);
+      }
+      return;
+    }
+
+    if (newTo) {
+      this.to = newTo;
+      if (this.from === this.to) {
+        this.from = getOppositeDirection(newTo);
+      }
+      return;
+    }
+  }
+
   draw(ctx, x, y, size) {
     ctx.fillStyle = TILE_COLOR;
     ctx.fillRect(x, y, size, size);

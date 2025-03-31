@@ -139,14 +139,14 @@ class Editor {
             ? upRightNeighbor
             : null;
 
-        if (!upToNeighbor) {
-          upNeighbor.to = "DOWN";
+        if (!upToNeighbor && upNeighbor.to !== "DOWN") {
+          upNeighbor.updateDirections(null, "DOWN");
           const haveFilledDirections = addDirection("UP");
           if (haveFilledDirections) {
             break;
           }
-        } else if (!upFromNeighbor) {
-          upNeighbor.from = "DOWN";
+        } else if (!upFromNeighbor && upNeighbor.from !== "DOWN") {
+          upNeighbor.updateDirections("DOWN", null);
           const haveFilledDirections = addDirection("UP");
           if (haveFilledDirections) {
             break;
@@ -180,14 +180,14 @@ class Editor {
             ? downRightNeighbor
             : null;
 
-        if (!downToNeighbor) {
-          downNeighbor.to = "UP";
+        if (!downToNeighbor && downNeighbor.to !== "UP") {
+          downNeighbor.updateDirections(null, "UP");
           const haveFilledDirections = addDirection("DOWN");
           if (haveFilledDirections) {
             break;
           }
-        } else if (!downFromNeighbor) {
-          downNeighbor.from = "UP";
+        } else if (!downFromNeighbor && downNeighbor.from !== "UP") {
+          downNeighbor.updateDirections("UP", null);
           const haveFilledDirections = addDirection("DOWN");
           if (haveFilledDirections) {
             break;
@@ -221,14 +221,14 @@ class Editor {
             ? leftDownNeighbor
             : null;
 
-        if (!leftToNeighbor) {
-          leftNeighbor.to = "RIGHT";
+        if (!leftToNeighbor && leftNeighbor.to !== "RIGHT") {
+          leftNeighbor.updateDirections(null, "RIGHT");
           const haveFilledDirections = addDirection("LEFT");
           if (haveFilledDirections) {
             break;
           }
-        } else if (!leftFromNeighbor) {
-          leftNeighbor.from = "RIGHT";
+        } else if (!leftFromNeighbor && leftNeighbor.from !== "RIGHT") {
+          leftNeighbor.updateDirections("RIGHT", null);
           const haveFilledDirections = addDirection("LEFT");
           if (haveFilledDirections) {
             break;
@@ -262,14 +262,14 @@ class Editor {
             ? rightDownNeighbor
             : null;
 
-        if (!rightToNeighbor) {
-          rightNeighbor.to = "LEFT";
+        if (!rightToNeighbor && rightNeighbor.to !== "LEFT") {
+          rightNeighbor.updateDirections(null, "LEFT");
           const haveFilledDirections = addDirection("RIGHT");
           if (haveFilledDirections) {
             break;
           }
-        } else if (!rightFromNeighbor) {
-          rightNeighbor.from = "LEFT";
+        } else if (!rightFromNeighbor && rightNeighbor.from !== "LEFT") {
+          rightNeighbor.updateDirections("LEFT", null);
           const haveFilledDirections = addDirection("RIGHT");
           if (haveFilledDirections) {
             break;
