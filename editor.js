@@ -328,8 +328,8 @@ class Editor {
       }
       const dx = e.clientX - this.clickOrigin.x;
       const dy = e.clientY - this.clickOrigin.y;
-      this.camX += dx / this.#scale();
-      this.camY += dy / this.#scale();
+      this.camX += dx;
+      this.camY += dy;
       this.clickOrigin.x = e.clientX;
       this.clickOrigin.y = e.clientY;
       this.hasMovedDuringClick = true;
