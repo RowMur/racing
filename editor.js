@@ -1,3 +1,4 @@
+const LOCAL_STORAGE_KEY = "editorState";
 class Editor {
   constructor(x, y) {
     this.x = x;
@@ -54,7 +55,7 @@ class Editor {
       return;
     }
 
-    if (this.start === null) {
+    if (!this.start) {
       this.start = key;
     }
 
@@ -303,10 +304,18 @@ class Editor {
     this.clickOrigin = null;
   }
 
-  init() {
-    this.state.clear();
+  init(ctx) {
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedState) {
+      const parsedState = JSON.parse(savedState);
+      this.start = parsedState.start;
+      for (const { key, tile } of parsedState.tiles) {
+        this.state.set(key, new Tile(tile.x, tile.y, tile.from, tile.to));
+      }
+    }
 
     window.addEventListener("mousedown", (e) => {
+      if (e.target !== ctx.canvas) return;
       this.isClicking = true;
       this.clickOrigin = {
         x: e.clientX,
@@ -363,8 +372,6 @@ class Editor {
   update(ctx) {
     const offsetX = this.#zoomedInterval() - (this.x % this.#zoomedInterval());
     const offsetY = this.#zoomedInterval() - (this.y % this.#zoomedInterval());
-    console.log(offsetX);
-    console.log(offsetY);
     const borderLeft = -offsetX;
     let borderRight;
     for (
@@ -415,5 +422,16 @@ class Editor {
       const { x, y } = this.#getCanvasCoordsFromStateCoords(tile.x, tile.y);
       tile.draw(ctx, x, y, this.#zoomedInterval(), key === this.start);
     }
+  }
+
+  save() {
+    const state = {
+      start: this.start,
+      tiles: Array.from(this.state.entries()).map(([key, tile]) => ({
+        key,
+        tile,
+      })),
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
   }
 }

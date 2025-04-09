@@ -2,4 +2,30 @@ html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    position: relative;
+}
+
+.command-bar {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    padding: 8px 16px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 8px;
+}
+
+.command-bar > button {
+    padding: 8px;
+    color: white;
+    border: none;
+    border-radius: 100%;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.command-bar > button:hover {
+    background-color: #F5F5F5;
 }
