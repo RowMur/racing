@@ -19,9 +19,6 @@ class Editor {
     this.zoomMin = 0.5;
     this.zoomStep = 0.1;
 
-    this.camX = x;
-    this.camY = y;
-
     this.isClicking = false;
     this.hasMovedDuringClick = false;
     this.clickOrigin = null;
@@ -293,15 +290,10 @@ class Editor {
     this.lastRemoved = null;
   }
 
-  #scale() {
-    return this.zoom / this.zoomMin;
-  }
-
   #getCanvasCoordsFromStateCoords(x, y) {
-    const { borderLeft, borderTop } = this.borders;
     return {
-      x: borderLeft + x * this.#zoomedInterval(),
-      y: borderTop + y * this.#zoomedInterval(),
+      x: this.x + x * this.#zoomedInterval(),
+      y: this.y + y * this.#zoomedInterval(),
     };
   }
 
@@ -328,8 +320,8 @@ class Editor {
       }
       const dx = e.clientX - this.clickOrigin.x;
       const dy = e.clientY - this.clickOrigin.y;
-      this.camX += dx;
-      this.camY += dy;
+      this.x += dx;
+      this.y += dy;
       this.clickOrigin.x = e.clientX;
       this.clickOrigin.y = e.clientY;
       this.hasMovedDuringClick = true;
@@ -343,44 +335,9 @@ class Editor {
 
       this.#resetClickState();
 
-      if (
-        e.clientX < this.borders.borderLeft ||
-        e.clientX > this.borders.borderRight ||
-        e.clientY < this.borders.borderTop ||
-        e.clientY > this.borders.borderBottom
-      ) {
-        return;
-      }
-
-      const x = Math.floor(
-        (e.clientX - this.borders.borderLeft) / this.#zoomedInterval()
-      );
-      const y = Math.floor(
-        (e.clientY - this.borders.borderTop) / this.#zoomedInterval()
-      );
-      // if (!this.isHoldingShift) {
+      const x = Math.floor((e.clientX - this.x) / this.#zoomedInterval());
+      const y = Math.floor((e.clientY - this.y) / this.#zoomedInterval());
       this.#setState(x, y, !this.#getState(x, y));
-      // return;
-      // }
-
-      // if (this.lastAdded === null && this.lastRemoved === null) {
-      //   return;
-      // }
-
-      // const isAdding = !!this.lastAdded;
-      // const lastKey = isAdding ? this.lastAdded : this.lastRemoved;
-
-      // const { x: lastX, y: lastY } = this.#getCoordsFromStateKey(lastKey);
-      // const minX = Math.min(x, lastX);
-      // const maxX = Math.max(x, lastX);
-      // const minY = Math.min(y, lastY);
-      // const maxY = Math.max(y, lastY);
-      // for (let i = minX; i <= maxX; i++) {
-      //   for (let j = minY; j <= maxY; j++) {
-      //     this.#setState(i, j, isAdding);
-      //   }
-      // }
-      // this.lastAdded = this.#stateKeyFromCoords(x, y);
     });
 
     window.addEventListener("keydown", (e) => {
@@ -404,26 +361,41 @@ class Editor {
   }
 
   update(ctx) {
-    const scale = this.#scale();
-    const borderLeft = this.camX - (ctx.canvas.width * scale) / 2;
-    const borderRight = this.camX + (ctx.canvas.width * scale) / 2;
-    const borderTop = this.camY - (ctx.canvas.height * scale) / 2;
-    const borderBottom = this.camY + (ctx.canvas.height * scale) / 2;
-
-    const leftOverX = (borderRight - borderLeft) % this.#zoomedInterval();
-    const leftOverY = (borderBottom - borderTop) % this.#zoomedInterval();
+    const offsetX = this.#zoomedInterval() - (this.x % this.#zoomedInterval());
+    const offsetY = this.#zoomedInterval() - (this.y % this.#zoomedInterval());
+    console.log(offsetX);
+    console.log(offsetY);
+    const borderLeft = -offsetX;
+    let borderRight;
+    for (
+      let i = borderLeft;
+      i <= ctx.canvas.width;
+      i += this.#zoomedInterval()
+    ) {
+      borderRight = i;
+    }
+    borderRight += this.#zoomedInterval();
+    const borderTop = -offsetY;
+    let borderBottom;
+    for (
+      let i = borderTop;
+      i <= ctx.canvas.height;
+      i += this.#zoomedInterval()
+    ) {
+      borderBottom = i;
+    }
+    borderBottom += this.#zoomedInterval();
 
     this.borders = {
-      borderLeft: borderLeft + leftOverX / 2,
-      borderRight: borderRight - leftOverX / 2,
-      borderTop: borderTop + leftOverY / 2,
-      borderBottom: borderBottom - leftOverY / 2,
+      borderLeft: borderLeft,
+      borderRight: borderRight,
+      borderTop: borderTop,
+      borderBottom: borderBottom,
     };
   }
 
   draw(ctx) {
     const { borderLeft, borderRight, borderTop, borderBottom } = this.borders;
-
     for (let i = borderLeft; i <= borderRight; i += this.#zoomedInterval()) {
       ctx.beginPath();
       ctx.moveTo(i, borderTop);
