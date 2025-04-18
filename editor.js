@@ -1,6 +1,5 @@
-const LOCAL_STORAGE_KEY = "editorState";
 class Editor {
-  constructor(x, y) {
+  constructor(x, y, storage) {
     this.x = x;
     this.y = y;
 
@@ -8,6 +7,7 @@ class Editor {
     this.gridBorderColor = "lightgrey";
     this.selectedColor = "lightgrey";
 
+    this.storage = storage;
     this.state = new Map();
     this.start = null;
 
@@ -305,11 +305,10 @@ class Editor {
   }
 
   init(ctx) {
-    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedState) {
-      const parsedState = JSON.parse(savedState);
-      this.start = parsedState.start;
-      for (const { key, tile } of parsedState.tiles) {
+    const track = this.storage.getTrack();
+    if (track) {
+      this.start = track.start;
+      for (const { key, tile } of track.tiles) {
         this.state.set(key, new Tile(tile.x, tile.y, tile.from, tile.to));
       }
     }
@@ -425,13 +424,13 @@ class Editor {
   }
 
   save() {
-    const state = {
+    const track = {
       start: this.start,
       tiles: Array.from(this.state.entries()).map(([key, tile]) => ({
         key,
         tile,
       })),
     };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+    this.storage.saveTrack(track);
   }
 }
