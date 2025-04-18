@@ -10,16 +10,12 @@ class Game {
     this.y = y;
 
     this.screen = SCREEN_EDITOR;
-    this.editor = new Editor(x, y);
-    this.race = new Race(x, y);
 
     this.#editButton = document.getElementById("edit");
     this.#raceButton = document.getElementById("race");
   }
 
-  init(ctx) {
-    this.editor.init(ctx);
-
+  init() {
     this.#editButton.addEventListener("click", () => {
       this.screen = SCREEN_EDITOR;
     });
@@ -39,10 +35,19 @@ class Game {
 
   update(ctx) {
     if (this.screen === SCREEN_EDITOR) {
+      if (!this.editor) {
+        this.editor = new Editor(this.x, this.y);
+        this.editor.init(ctx);
+      }
+      this.race = undefined;
       this.#editButton.style.display = "none";
       this.#raceButton.style.display = "block";
       this.editor.update(ctx);
     } else if (this.screen === SCREEN_RACE) {
+      if (!this.race) {
+        this.race = new Race(this.x, this.y);
+      }
+      this.editor = undefined;
       this.#editButton.style.display = "block";
       this.#raceButton.style.display = "none";
     }
