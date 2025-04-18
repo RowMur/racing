@@ -3,20 +3,15 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
 
-const editor = new Editor(canvas.clientWidth / 2, canvas.clientHeight / 2);
-editor.init(ctx);
-
-const saveButton = document.getElementById("save");
-saveButton.addEventListener("click", () => {
-  editor.save();
-});
+const game = new Game(canvas.clientWidth / 2, canvas.clientHeight / 2);
+game.init(ctx);
 
 animate();
 
 function animate() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  editor.update(ctx);
-  editor.draw(ctx);
+  game.update(ctx);
+  game.draw(ctx);
   requestAnimationFrame(animate);
 }
