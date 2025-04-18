@@ -75,6 +75,31 @@ class Tile {
 
     const curbSize = size * CURB_WIDTH;
 
+    if (isStartFinish) {
+      if (this.from === "LEFT" || this.from === "RIGHT") {
+        for (let i = 0; i < size / curbSize; i++) {
+          ctx.fillStyle = FINISH_LINE_COLORS[i % FINISH_LINE_COLORS.length];
+          ctx.fillRect(x, y + i * curbSize, curbSize, curbSize);
+        }
+        for (let i = 0; i < size / curbSize; i++) {
+          ctx.fillStyle =
+            FINISH_LINE_COLORS[(i + 1) % FINISH_LINE_COLORS.length];
+          ctx.fillRect(x + curbSize, y + i * curbSize, curbSize, curbSize);
+        }
+      }
+      if (this.from === "UP" || this.from === "DOWN") {
+        for (let i = 0; i < size / curbSize; i++) {
+          ctx.fillStyle = FINISH_LINE_COLORS[i % FINISH_LINE_COLORS.length];
+          ctx.fillRect(x + i * curbSize, y, curbSize, curbSize);
+        }
+        for (let i = 0; i < size / curbSize; i++) {
+          ctx.fillStyle =
+            FINISH_LINE_COLORS[(i + 1) % FINISH_LINE_COLORS.length];
+          ctx.fillRect(x + i * curbSize, y + curbSize, curbSize, curbSize);
+        }
+      }
+    }
+
     if (this.from !== "LEFT" && this.to !== "LEFT") {
       // Draw left curb
       for (let i = 0; i < size / curbSize; i++) {
@@ -104,52 +129,6 @@ class Tile {
       for (let i = 0; i < size / curbSize; i++) {
         ctx.fillStyle = CURB_COLORS[i % CURB_COLORS.length];
         ctx.fillRect(x + i * curbSize, y + size - curbSize, curbSize, curbSize);
-      }
-    }
-
-    if (isStartFinish) {
-      const numOfMiniSquare = size / curbSize;
-      if (this.from === "LEFT" || this.from === "RIGHT") {
-        for (let i = 1; i < size / curbSize - 1; i++) {
-          ctx.fillStyle = FINISH_LINE_COLORS[i % FINISH_LINE_COLORS.length];
-          ctx.fillRect(
-            x + curbSize * (numOfMiniSquare / 2 - 1),
-            y + i * curbSize,
-            curbSize,
-            curbSize
-          );
-        }
-        for (let i = 1; i < size / curbSize - 1; i++) {
-          ctx.fillStyle =
-            FINISH_LINE_COLORS[(i + 1) % FINISH_LINE_COLORS.length];
-          ctx.fillRect(
-            x + curbSize * (numOfMiniSquare / 2),
-            y + i * curbSize,
-            curbSize,
-            curbSize
-          );
-        }
-      }
-      if (this.from === "UP" || this.from === "DOWN") {
-        for (let i = 1; i < size / curbSize - 1; i++) {
-          ctx.fillStyle = FINISH_LINE_COLORS[i % FINISH_LINE_COLORS.length];
-          ctx.fillRect(
-            x + i * curbSize,
-            y + curbSize * (numOfMiniSquare / 2 - 1),
-            curbSize,
-            curbSize
-          );
-        }
-        for (let i = 1; i < size / curbSize - 1; i++) {
-          ctx.fillStyle =
-            FINISH_LINE_COLORS[(i + 1) % FINISH_LINE_COLORS.length];
-          ctx.fillRect(
-            x + i * curbSize,
-            y + curbSize * (numOfMiniSquare / 2),
-            curbSize,
-            curbSize
-          );
-        }
       }
     }
   }
